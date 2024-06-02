@@ -3,7 +3,8 @@ import plotly.express as px
 import pandas as pd
 
 # Carregar os dados
-df = pd.read_excel("/Users/regis/PycharmProjects/grafico.os/UT-020-PROJETOS.xlsx")
+df = pd.read_excel("UT-020-PROJETOS.xlsx")
+
 
 # Contar as quantidades de OS por setor e status
 df_counts = df.groupby(['Setor', 'Status']).size().reset_index(name='Quantidade')
