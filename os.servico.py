@@ -2,9 +2,11 @@ import streamlit as st
 import plotly.express as px
 import pandas as pd
 
+# Configurações da página do Streamlit
+st.set_page_config(page_title='Filtrar Atividades por Data', layout='wide')
+
 # Carregar os dados
 df = pd.read_excel("UT-020-PROJETOS.xlsx")
-
 
 # Contar as quantidades de OS por setor e status
 df_counts = df.groupby(['Setor', 'Status']).size().reset_index(name='Quantidade')
@@ -33,6 +35,20 @@ fig = px.bar(df_filtered, x="Setor", y="Quantidade", color="Status", barmode="gr
 # Exibir o gráfico
 st.plotly_chart(fig)
 
+# Entrada para a data desejada
+date_to_filter = st.date_input("Escolha a data para filtrar as atividades")
+
+if date_to_filter:
+    # Converter a coluna de datas para datetime se necessário
+    if not pd.api.types.is_datetime64_any_dtype(df['Data Prevista']):
+        df['Data Prevista'] = pd.to_datetime(df['Data Prevista'], errors='coerce')
+
+    # Filtrar o DataFrame pela data escolhida
+    filtered_df = df[df['Data Prevista'].dt.date == date_to_filter]
+
+    # Exibir o DataFrame filtrado
+    st.write(f"Atividades para {date_to_filter}:")
+    st.dataframe(filtered_df)
 # Para rodar o servidor do Streamlit:
 # cd /Users/regis/PycharmProjects/grafico.os/
 # streamlit run os.servico.py
