@@ -6,7 +6,7 @@ import pandas as pd
 st.set_page_config(page_title='Filtrar Atividades por Data', layout='wide')
 
 # Carregar os dados
-df = pd.read_excel("IMPRESSÃO(PRJ)_rev.11.xlsx")
+df = pd.read_excel("UT-020-PROJETOS.xlsx")
 
 # Contar as quantidades de OS por setor e status
 df_counts = df.groupby(['Setor', 'Status']).size().reset_index(name='Quantidade')
@@ -58,4 +58,3 @@ if date_to_filter:
 # Para rodar o servidor do Streamlit:
 # cd /Users/regis/PycharmProjects/grafico.os/
 # streamlit run os.servico.py
-
