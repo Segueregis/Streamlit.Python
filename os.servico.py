@@ -2,6 +2,7 @@ import streamlit as st
 import plotly.express as px
 import pandas as pd
 from io import BytesIO
+import xlsxwriter
 
 # Configurações da página do Streamlit
 st.set_page_config(page_title='Filtrar Atividades por Data', layout='wide')
@@ -33,8 +34,8 @@ else:
 # Criar a figura
 fig = px.bar(df_filtered, x="Setor", y="Quantidade", color="Status", barmode="group")
 
-# Exibir o gráfico
-st.plotly_chart(fig)
+# Exibir o gráfico ocupando toda a largura da tela
+st.plotly_chart(fig, use_container_width=True)
 
 # Código para filtrar e exibir tabela de outra planilha
 
@@ -72,6 +73,7 @@ if date_to_filter:
         file_name=f"Atividades_{date_to_filter}.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
 
 # Para rodar o servidor do Streamlit:
 # cd /Users/regis/PycharmProjects/grafico.os/
