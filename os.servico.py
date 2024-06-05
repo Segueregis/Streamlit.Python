@@ -1,6 +1,7 @@
 import streamlit as st
 import plotly.express as px
 import pandas as pd
+from io import BytesIO
 
 # Configurações da página do Streamlit
 st.set_page_config(page_title='Filtrar Atividades por Data', layout='wide')
@@ -54,6 +55,23 @@ if date_to_filter:
     # Exibir o DataFrame filtrado
     st.write(f"Atividades para {date_to_filter}:")
     st.dataframe(filtered_df_programacao)
+
+    # Função para converter DataFrame para Excel
+    def to_excel(df):
+        output = BytesIO()
+        writer = pd.ExcelWriter(output, engine='xlsxwriter')
+        df.to_excel(writer, index=False, sheet_name='Atividades')
+        writer.close()
+        processed_data = output.getvalue()
+        return processed_data
+
+    # Botão para download do Excel
+    st.download_button(
+        label="Baixar tabela em Excel",
+        data=to_excel(filtered_df_programacao),
+        file_name=f"Atividades_{date_to_filter}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
 # Para rodar o servidor do Streamlit:
 # cd /Users/regis/PycharmProjects/grafico.os/
