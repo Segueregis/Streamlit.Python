@@ -57,4 +57,5 @@ if date_to_filter:
 
 # Para rodar o servidor do Streamlit:
 # cd /Users/regis/PycharmProjects/grafico.os/
-# streamlit run teste3.py
+# streamlit run os.servico.py
+
