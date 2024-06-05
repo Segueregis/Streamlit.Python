@@ -43,8 +43,3 @@ typing_extensions==4.12.1
 tzdata==2024.1
 urllib3==2.2.1
 watchdog==4.0.1
-streamlit==1.13.0
-plotly==5.9.0
-pandas==1.5.3
-openpyxl==3.0.10
-xlsxwriter==3.0.3
