@@ -6,7 +6,7 @@ import pandas as pd
 st.set_page_config(page_title='Filtrar Atividades por Data', layout='wide')
 
 # Carregar os dados
-df = pd.read_excel("UT-020-PROJETOS.xlsx")
+df = pd.read_excel("IMPRESSÃO(PRJ)_rev.11.xlsx")
 
 # Contar as quantidades de OS por setor e status
 df_counts = df.groupby(['Setor', 'Status']).size().reset_index(name='Quantidade')
@@ -35,20 +35,26 @@ fig = px.bar(df_filtered, x="Setor", y="Quantidade", color="Status", barmode="gr
 # Exibir o gráfico
 st.plotly_chart(fig)
 
+# Código para filtrar e exibir tabela de outra planilha
+
+# Carregar os dados ignorando a primeira coluna
+df_programacao = pd.read_excel("PROGRAMAÇÃO-DIARIA.xlsx", usecols=lambda col: col not in [0])
+
 # Entrada para a data desejada
 date_to_filter = st.date_input("Escolha a data para filtrar as atividades")
 
 if date_to_filter:
     # Converter a coluna de datas para datetime se necessário
-    if not pd.api.types.is_datetime64_any_dtype(df['Data Prevista']):
-        df['Data Prevista'] = pd.to_datetime(df['Data Prevista'], errors='coerce')
+    if not pd.api.types.is_datetime64_any_dtype(df_programacao['Data Prevista']):
+        df_programacao['Data Prevista'] = pd.to_datetime(df_programacao['Data Prevista'], errors='coerce')
 
     # Filtrar o DataFrame pela data escolhida
-    filtered_df = df[df['Data Prevista'].dt.date == date_to_filter]
+    filtered_df_programacao = df_programacao[df_programacao['Data Prevista'].dt.date == date_to_filter]
 
     # Exibir o DataFrame filtrado
     st.write(f"Atividades para {date_to_filter}:")
-    st.dataframe(filtered_df)
+    st.dataframe(filtered_df_programacao)
+
 # Para rodar o servidor do Streamlit:
 # cd /Users/regis/PycharmProjects/grafico.os/
-# streamlit run os.servico.py
+# streamlit run teste3.py
