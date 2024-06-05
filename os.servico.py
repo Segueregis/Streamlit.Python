@@ -38,7 +38,7 @@ st.plotly_chart(fig)
 # Código para filtrar e exibir tabela de outra planilha
 
 # Carregar os dados ignorando a primeira coluna
-df_programacao = pd.read_excel("PROGRAMAÇÃO-DIARIA.xlsx", usecols=lambda col: col not in [0])
+df_programacao = pd.read_excel("PROGRAMACAO-DIARIA.xlsx", usecols=lambda col: col not in [0])
 
 # Entrada para a data desejada
 date_to_filter = st.date_input("Escolha a data para filtrar as atividades")
