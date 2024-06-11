@@ -10,7 +10,7 @@ st.set_page_config(page_title='Filtrar Atividades por Data', layout='wide')
 logo_path = 'logo.png'  # Certifique-se de que o arquivo logo.png está no mesmo diretório do seu script
 
 # Exibir a imagem do logo
-st.image(logo_path, width=250)  # Ajuste o tamanho conforme necessário
+st.image(logo_path, width=300)  # Ajuste o tamanho conforme necessário
 
 # Título e subtítulo abaixo da imagem
 st.title('PROJETOS - UT 020')
@@ -50,32 +50,25 @@ df_programacao = pd.read_excel(file_path)
 df_programacao['Data_Solicitacao'] = pd.to_datetime(df_programacao['Data_Solicitacao'], errors='coerce')
 
 # Entrada para o intervalo de datas desejado
-start_date = st.date_input("Escolha a data de início para filtrar as atividades",
-                           value=pd.to_datetime("2024-01-01").date())
-end_date = st.date_input("Escolha a data de término para filtrar as atividades",
-                         value=pd.to_datetime("2024-12-31").date())
+start_date = st.date_input("Escolha a data de início para filtrar as atividades", value=pd.to_datetime("2024-01-01").date())
+end_date = st.date_input("Escolha a data de término para filtrar as atividades", value=pd.to_datetime("2024-12-31").date())
 
 if start_date and end_date:
     # Converta start_date e end_date para datetime64[ns]
     start_date = pd.to_datetime(start_date)
     end_date = pd.to_datetime(end_date)
-
+    
     # Filtrar os dados para o intervalo de datas selecionado
-    filtered_df = df_programacao[
-        (df_programacao['Data_Solicitacao'] >= start_date) & (df_programacao['Data_Solicitacao'] <= end_date)]
+    filtered_df = df_programacao[(df_programacao['Data_Solicitacao'] >= start_date) & (df_programacao['Data_Solicitacao'] <= end_date)]
 
     # Filtro para seleção de setores
-    selected_sectors = st.multiselect("Selecione os setores", options=filtered_df['Setor'].unique(),
-                                      default=filtered_df['Setor'].unique())
+    selected_sectors = st.multiselect("Selecione os setores", options=filtered_df['Setor'].unique(), default=filtered_df['Setor'].unique())
 
     # Filtro para seleção de status
-    selected_status = st.multiselect("Selecione o status das solicitações",
-                                     options=filtered_df['Denominação Estado OS'].unique(),
-                                     default=filtered_df['Denominação Estado OS'].unique())
+    selected_status = st.multiselect("Selecione o status das solicitações", options=filtered_df['Denominação Estado OS'].unique(), default=filtered_df['Denominação Estado OS'].unique())
 
     # Aplicar os filtros de seleção de setor e status
-    filtered_df = filtered_df[
-        filtered_df['Setor'].isin(selected_sectors) & filtered_df['Denominação Estado OS'].isin(selected_status)]
+    filtered_df = filtered_df[filtered_df['Setor'].isin(selected_sectors) & filtered_df['Denominação Estado OS'].isin(selected_status)]
 
     # Contar a quantidade de Data_Solicitacao para cada setor
     sector_counts = filtered_df['Setor'].value_counts().reset_index()
@@ -106,8 +99,8 @@ if start_date and end_date:
     # Atualizar o layout do gráfico para mostrar os rótulos de texto
     fig1.update_traces(texttemplate='%{text}', textposition='outside')
 
-    # Mostrar o primeiro gráfico no Streamlit
-    st.plotly_chart(fig1)
+    # Mostrar o gráfico no Streamlit ocupando toda a largura da tela
+    st.plotly_chart(fig1, use_container_width=True)
 
     # Criar o segundo gráfico (histograma)
     fig2 = px.histogram(filtered_df, x="Data_Solicitacao",
@@ -128,7 +121,6 @@ if start_date and end_date:
     st.write(f"Atividades encerradas de {start_date.date()} até {end_date.date()}:")
     st.dataframe(filtered_df)
 
-
     # Função para converter DataFrame em Excel
     def to_excel(df):
         output = io.BytesIO()
@@ -136,7 +128,6 @@ if start_date and end_date:
             df.to_excel(writer, index=False, sheet_name='Sheet1')
         processed_data = output.getvalue()
         return processed_data
-
 
     # Gerar dados do Excel
     excel_data = to_excel(filtered_df)
@@ -163,13 +154,11 @@ if date_to_filter:
         df_programacao_diaria['Data Prevista'] = pd.to_datetime(df_programacao_diaria['Data Prevista'], errors='coerce')
 
     # Filtrar o DataFrame pela data escolhida
-    filtered_df_programacao_diaria = df_programacao_diaria[
-        df_programacao_diaria['Data Prevista'].dt.date == date_to_filter]
+    filtered_df_programacao_diaria = df_programacao_diaria[df_programacao_diaria['Data Prevista'].dt.date == date_to_filter]
 
     # Exibir o DataFrame filtrado
     st.write(f"Atividades para {date_to_filter}:")
     st.dataframe(filtered_df_programacao_diaria)
-
 
 # Para rodar o servidor do Streamlit:
 # cd /Users/regis/PycharmProjects/grafico.os/
