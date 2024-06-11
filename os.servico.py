@@ -146,7 +146,7 @@ if start_date and end_date:
 df_programacao_diaria = pd.read_excel("PROGRAMACAO-DIARIA.xlsx", usecols=lambda col: col not in [0])
 
 # Entrada para a data desejada
-date_to_filter = st.date_input("Escolha a data para filtrar as atividades", key='programacao')
+date_to_filter = st.date_input("Escolha a data para filtrar as atividades Semanais", key='programacao')
 
 if date_to_filter:
     # Converter a coluna de datas para datetime se necessário
