@@ -14,7 +14,7 @@ st.image(logo_path, width=300)  # Ajuste o tamanho conforme necessário
 
 # Título e subtítulo abaixo da imagem
 st.title('PROJETOS - UT 020')
-st.subheader('Gráfico Ordem de Serviços')
+st.subheader('Gráfico Backlog')
 st.write('Obs: Esse gráfico mostra os Setores.')
 
 # Carregar os dados
