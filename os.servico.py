@@ -105,21 +105,22 @@ if start_date and end_date:
                   barmode='group',
                   text=merged_counts[['Porcentagem', 'Encerradas']].apply(lambda x: f'{x[0]:.2f}%', axis=1))
 
-    # Atualizar o layout do gráfico para mostrar os rótulos de texto
+    # Atualizar o layout do gráfico para mostrar os rótulos de texto e ocupar toda a largura da tela
     fig1.update_traces(texttemplate='%{text}', textposition='outside')
+    fig1.update_layout(width=1200)  # Ajuste o valor da largura conforme necessário
 
     # Mostrar o primeiro gráfico no Streamlit
-    st.plotly_chart(fig1)
+    st.plotly_chart(fig1, use_container_width=True)
 
     # Criar o segundo gráfico (histograma)
     fig2 = px.histogram(filtered_df, x="Data_Solicitacao",
-                        histfunc="count", title="Historico de Solicitações Mensal")
+                        histfunc="count", title="Historico de Solicitações ao Longo do Tempo")
     fig2.update_traces(xbins_size="M1")
     fig2.update_xaxes(showgrid=True, ticklabelmode="period", dtick="M1", tickformat="%b\n%Y")
     fig2.update_layout(bargap=0.1)
 
     # Mostrar o segundo gráfico no Streamlit
-    st.plotly_chart(fig2)
+    st.plotly_chart(fig2, use_container_width=True)
 
     # Adicionar uma tabela resumida
     st.subheader("Resumo das Solicitações por Setor e Status")
@@ -175,11 +176,12 @@ if date_to_filter:
 
     # Botão para download do Excel
     st.download_button(
-        label="Baixar tabela em Excel - Programação Semanal",
+        label="Baixar tabela em Excel - Programação Diária",
         data=excel_data_diaria,
         file_name='programacao_diaria_filtrada.xlsx',
         mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
+
 
 # Para rodar o servidor do Streamlit:
 # cd /Users/regis/PycharmProjects/grafico.os/
