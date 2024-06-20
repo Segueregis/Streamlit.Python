@@ -10,49 +10,43 @@ import io
 # Configurações da página do Streamlit
 st.set_page_config(page_title='Filtrar Atividades por Data', layout='wide')
 
-
-
 # Caminho para a imagem do logo
-logo_path = 'logo.png'  # Certifique-se de que o arquivo logo.png está no mesmo diretório do seu script
-
-# Exibir a imagem do logo
-st.image(logo_path, width=250)  # Ajuste o tamanho conforme necessário
+logo_path = 'logo.png'
+st.image(logo_path, width=250)  # Exibir a imagem do logo
 
 # Título e subtítulo abaixo da imagem
 st.title('PROJETOS - UT 020')
 st.subheader('Gráfico Backlog')
-st.write('Obs: Esse gráfico mostra os Setores.')
+st.write('Obs: Este gráfico mostra os Setores.')
 
-# Carregar os dados
+# Carregar os dados principais
 df = pd.read_excel("UT-020-IMPRESAO.xlsx")
 
 # Contar as quantidades de OS por setor e status
 df_counts = df.groupby(['Setor', 'Status']).size().reset_index(name='Quantidade')
 
-# Gerar as opções do dropdown
+# Gerar as opções do dropdown para seleção de setor
 opcoes = list(df['Setor'].unique())
 opcoes.append("Todos os Setores")
 
 # Dropdown para selecionar o setor
 selected_setor = st.selectbox('Selecione o Setor:', opcoes, index=opcoes.index("Todos os Setores"))
 
-# Filtrar os dados com base na seleção
+# Filtrar os dados com base na seleção do setor
 if selected_setor == "Todos os Setores":
     df_filtered = df_counts
 else:
     df_filtered = df_counts[df_counts['Setor'] == selected_setor]
 
-# Criar a figura
+# Criar o gráfico de barras agrupadas
 fig = px.bar(df_filtered, x="Setor", y="Quantidade", color="Status", barmode="group")
-
-# Exibir o gráfico ocupando toda a largura da tela
 st.plotly_chart(fig, use_container_width=True)
 
-# Carregar o arquivo Excel diretamente do diretório
+# Carregar os dados secundários
 file_path = 'TODAS_OS_20.xlsx'
 df_programacao = pd.read_excel(file_path)
 
-# Certifique-se de que a coluna 'Data_Solicitacao' está no formato datetime
+# Certificar-se de que a coluna 'Data_Solicitacao' está no formato datetime
 df_programacao['Data_Solicitacao'] = pd.to_datetime(df_programacao['Data_Solicitacao'], errors='coerce')
 
 # Entrada para o intervalo de datas desejado
@@ -70,18 +64,20 @@ if start_date and end_date:
     filtered_df = df_programacao[
         (df_programacao['Data_Solicitacao'] >= start_date) & (df_programacao['Data_Solicitacao'] <= end_date)]
 
-    # Filtro para seleção de setores
-    selected_sectors = st.multiselect("Selecione os setores", options=filtered_df['Setor'].unique(),
-                                      default=filtered_df['Setor'].unique())
+    # Entrada para filtrar por número de OS Cliente
+    os_cliente_filtro = st.text_input("Digite o número de OS Cliente para filtrar as atividades",
+                                      key='os_cliente_filtro')
 
-    # Filtro para seleção de status
-    selected_status = st.multiselect("Selecione o status das solicitações",
-                                     options=filtered_df['Denominação Estado OS'].unique(),
-                                     default=filtered_df['Denominação Estado OS'].unique())
+    # Aplicar o filtro se um número de OS Cliente for especificado
+    if os_cliente_filtro:
+        filtered_df = filtered_df[filtered_df['OS Cliente'] == os_cliente_filtro]
 
-    # Aplicar os filtros de seleção de setor e status
-    filtered_df = filtered_df[
-        filtered_df['Setor'].isin(selected_sectors) & filtered_df['Denominação Estado OS'].isin(selected_status)]
+    # Mostrar a contagem de resultados filtrados
+    st.write(f"Atividades encerradas de {start_date.date()} até {end_date.date()} para o OS Cliente '{os_cliente_filtro}':")
+    st.write(f"Total de registros encontrados: {len(filtered_df)}")
+
+    # Mostrar o DataFrame filtrado
+    st.dataframe(filtered_df)
 
     # Contar a quantidade de Data_Solicitacao para cada setor
     sector_counts = filtered_df['Setor'].value_counts().reset_index()
@@ -127,11 +123,11 @@ if start_date and end_date:
 
     # Adicionar barras totais sem especificar cor (usará as cores padrão do Plotly Express)
     fig2.add_bar(x=total_counts.index.to_timestamp(), y=total_counts.values,
-                 name='Total OS Solicitadas')
+                 name='Total Solicitações')
 
     # Adicionar barras de solicitações encerradas sem especificar cor
     fig2.add_bar(x=closed_counts.index.to_timestamp(), y=closed_counts.values,
-                 name='Total OS Encerradas')
+                 name='Total Encerradas')
 
     # Adicionar porcentagem sobre as barras de solicitações encerradas
     for i, value in enumerate(closed_counts.values):
@@ -166,10 +162,6 @@ if start_date and end_date:
     summary_df = filtered_df.groupby(['Setor', 'Denominação Estado OS']).size().unstack(fill_value=0)
     st.dataframe(summary_df)
 
-    # Exibir o DataFrame filtrado
-    st.write(f"Atividades encerradas de {start_date.date()} até {end_date.date()}:")
-    st.dataframe(filtered_df)
-
     # Função para converter DataFrame em Excel
     def to_excel(df):
         output = io.BytesIO()
@@ -188,6 +180,8 @@ if start_date and end_date:
         file_name='atividades_filtradas.xlsx',
         mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
+
+
 
 # Código para filtrar e exibir tabela de outra planilha
 
