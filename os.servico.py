@@ -1,12 +1,18 @@
-#AQUI ESTA O GRAFICO MAIS ATUALIZADO 16/06/24
+#AQUI ESTA O GRAFICO MAIS ATUALIZADO 19/06/24
+
 
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import io
+import locale
 
 # Configurações da página do Streamlit
 st.set_page_config(page_title='Filtrar Atividades por Data', layout='wide')
+
+# Definir idioma como português
+locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
 
 # Caminho para a imagem do logo
 logo_path = 'logo.png'  # Certifique-se de que o arquivo logo.png está no mesmo diretório do seu script
@@ -113,11 +119,46 @@ if start_date and end_date:
     st.plotly_chart(fig1, use_container_width=True)
 
     # Criar o segundo gráfico (histograma)
-    fig2 = px.histogram(filtered_df, x="Data_Solicitacao",
-                        histfunc="count", title="Historico de Solicitações ao Longo do Tempo")
-    fig2.update_traces(xbins_size="M1")
-    fig2.update_xaxes(showgrid=True, ticklabelmode="period", dtick="M1", tickformat="%b\n%Y")
-    fig2.update_layout(bargap=0.1)
+    total_counts = filtered_df['Data_Solicitacao'].dt.to_period('M').value_counts().sort_index()
+    closed_counts = closed_df['Data_Solicitacao'].dt.to_period('M').value_counts().sort_index()
+
+    # Calcular a porcentagem de solicitações encerradas
+    closed_percentage = (closed_counts / total_counts) * 100
+
+    fig2 = go.Figure()
+
+    # Adicionar barras totais sem especificar cor (usará as cores padrão do Plotly Express)
+    fig2.add_bar(x=total_counts.index.to_timestamp(), y=total_counts.values,
+                 name='Total Solicitações')
+
+    # Adicionar barras de solicitações encerradas sem especificar cor
+    fig2.add_bar(x=closed_counts.index.to_timestamp(), y=closed_counts.values,
+                 name='Total Encerradas')
+
+    # Adicionar porcentagem sobre as barras de solicitações encerradas
+    for i, value in enumerate(closed_counts.values):
+        x = closed_counts.index[i].to_timestamp()
+        y = value
+        percentage_text = f'{closed_percentage[i]:.2f}%'
+
+        # Adicionar a anotação sobre a barra
+        fig2.add_annotation(x=x, y=y, text=percentage_text,
+                            showarrow=False, font=dict(size=14, family="Arial"),
+                            xshift=0, yshift=10, align='center', valign='bottom')
+
+    # Atualizar o layout do gráfico
+    fig2.update_layout(
+        title="Histórico de Solicitações ao Longo do Tempo",
+        barmode='group',
+        xaxis_title='Data',
+        yaxis_title='Quantidade',
+        bargap=0.1,
+        xaxis=dict(
+            ticklabelmode="period",
+            dtick="M1",
+            tickformat="%b\n%Y"
+        )
+    )
 
     # Mostrar o segundo gráfico no Streamlit
     st.plotly_chart(fig2, use_container_width=True)
@@ -167,6 +208,7 @@ if date_to_filter:
     filtered_df_programacao_diaria = df_programacao_diaria[
         df_programacao_diaria['Data Prevista'].dt.date == date_to_filter]
 
+
     # Exibir o DataFrame filtrado
     st.write(f"Atividades para {date_to_filter}:")
     st.dataframe(filtered_df_programacao_diaria)
@@ -181,7 +223,6 @@ if date_to_filter:
         file_name='programacao_diaria_filtrada.xlsx',
         mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
-
 
 # Para rodar o servidor do Streamlit:
 # cd /Users/regis/PycharmProjects/grafico.os/
