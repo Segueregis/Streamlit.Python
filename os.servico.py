@@ -127,11 +127,11 @@ if start_date and end_date:
 
     # Adicionar barras totais sem especificar cor (usará as cores padrão do Plotly Express)
     fig2.add_bar(x=total_counts.index.to_timestamp(), y=total_counts.values,
-                 name='Total Solicitações')
+                 name='Total OS Solicitadas')
 
     # Adicionar barras de solicitações encerradas sem especificar cor
     fig2.add_bar(x=closed_counts.index.to_timestamp(), y=closed_counts.values,
-                 name='Total Encerradas')
+                 name='Total OS Encerradas')
 
     # Adicionar porcentagem sobre as barras de solicitações encerradas
     for i, value in enumerate(closed_counts.values):
