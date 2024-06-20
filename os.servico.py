@@ -65,7 +65,7 @@ if start_date and end_date:
         (df_programacao['Data_Solicitacao'] >= start_date) & (df_programacao['Data_Solicitacao'] <= end_date)]
 
     # Entrada para filtrar por número de OS Cliente
-    os_cliente_filtro = st.text_input("Digite o número de OS Cliente para filtrar as atividades",
+    os_cliente_filtro = st.text_input("Filtrar OS Cliente",
                                       key='os_cliente_filtro')
 
     # Aplicar o filtro se um número de OS Cliente for especificado
