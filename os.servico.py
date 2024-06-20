@@ -6,13 +6,11 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import io
-import locale
 
 # Configurações da página do Streamlit
 st.set_page_config(page_title='Filtrar Atividades por Data', layout='wide')
 
-# Definir idioma como português
-locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
+
 
 # Caminho para a imagem do logo
 logo_path = 'logo.png'  # Certifique-se de que o arquivo logo.png está no mesmo diretório do seu script
