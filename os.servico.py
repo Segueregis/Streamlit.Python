@@ -1,10 +1,9 @@
-#AQUI ESTA O GRAFICO MAIS ATUALIZADO 19/06/24
+#AQUI ESTA O GRAFICO MAIS ATUALIZADO 25/06/24
 
 
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 import io
 
 # Configurações da página do Streamlit
@@ -20,7 +19,7 @@ st.subheader('Gráfico Backlog')
 st.write('Obs: Este gráfico mostra os Setores.')
 
 # Carregar os dados principais
-df = pd.read_excel("UT-020-IMPRESAO.xlsx")
+df = pd.read_excel("UT-020-IMPRESAO.xlsm")
 
 # Contar as quantidades de OS por setor e status
 df_counts = df.groupby(['Setor', 'Status']).size().reset_index(name='Quantidade')
@@ -41,6 +40,8 @@ else:
 # Criar o gráfico de barras agrupadas
 fig = px.bar(df_filtered, x="Setor", y="Quantidade", color="Status", barmode="group")
 st.plotly_chart(fig, use_container_width=True)
+
+
 
 # Carregar os dados secundários
 file_path = 'TODAS_OS_20.xlsx'
@@ -79,84 +80,6 @@ if start_date and end_date:
     # Mostrar o DataFrame filtrado
     st.dataframe(filtered_df)
 
-    # Contar a quantidade de Data_Solicitacao para cada setor
-    sector_counts = filtered_df['Setor'].value_counts().reset_index()
-    sector_counts.columns = ['Setor', 'Quantidade']
-
-    # Calcular a porcentagem de solicitações para cada setor
-    total_solicitations = sector_counts['Quantidade'].sum()
-    sector_counts['Porcentagem'] = (sector_counts['Quantidade'] / total_solicitations) * 100
-
-    # Filtrar apenas as solicitações encerradas
-    closed_df = filtered_df[filtered_df['Denominação Estado OS'] == 'ENCERRADA']
-
-    # Contar a quantidade de solicitações encerradas para cada setor
-    closed_counts = closed_df['Setor'].value_counts().reset_index()
-    closed_counts.columns = ['Setor', 'Encerradas']
-
-    # Mesclar os dois DataFrames
-    merged_counts = pd.merge(sector_counts, closed_counts, on='Setor', how='left')
-    merged_counts['Encerradas'] = merged_counts['Encerradas'].fillna(0)  # Substituir NaNs por 0
-
-    # Criar o gráfico de barras agrupadas com Plotly
-    fig1 = px.bar(merged_counts, x='Setor', y=['Quantidade', 'Encerradas'],
-                  title=f'Quantidade de Solicitações por Setor ({start_date.date()} a {end_date.date()})',
-                  labels={'Setor': 'Setor', 'value': 'Quantidade'},
-                  barmode='group',
-                  text=merged_counts[['Porcentagem', 'Encerradas']].apply(lambda x: f'{x[0]:.2f}%', axis=1))
-
-    # Atualizar o layout do gráfico para mostrar os rótulos de texto e ocupar toda a largura da tela
-    fig1.update_traces(texttemplate='%{text}', textposition='outside')
-    fig1.update_layout(width=1200)  # Ajuste o valor da largura conforme necessário
-
-    # Mostrar o primeiro gráfico no Streamlit
-    st.plotly_chart(fig1, use_container_width=True)
-
-    # Criar o segundo gráfico (histograma)
-    total_counts = filtered_df['Data_Solicitacao'].dt.to_period('M').value_counts().sort_index()
-    closed_counts = closed_df['Data_Solicitacao'].dt.to_period('M').value_counts().sort_index()
-
-    # Calcular a porcentagem de solicitações encerradas
-    closed_percentage = (closed_counts / total_counts) * 100
-
-    fig2 = go.Figure()
-
-    # Adicionar barras totais sem especificar cor (usará as cores padrão do Plotly Express)
-    fig2.add_bar(x=total_counts.index.to_timestamp(), y=total_counts.values,
-                 name='Total Solicitações')
-
-    # Adicionar barras de solicitações encerradas sem especificar cor
-    fig2.add_bar(x=closed_counts.index.to_timestamp(), y=closed_counts.values,
-                 name='Total Encerradas')
-
-    # Adicionar porcentagem sobre as barras de solicitações encerradas
-    for i, value in enumerate(closed_counts.values):
-        x = closed_counts.index[i].to_timestamp()
-        y = value
-        percentage_text = f'{closed_percentage[i]:.2f}%'
-
-        # Adicionar a anotação sobre a barra
-        fig2.add_annotation(x=x, y=y, text=percentage_text,
-                            showarrow=False, font=dict(size=14, family="Arial"),
-                            xshift=0, yshift=10, align='center', valign='bottom')
-
-    # Atualizar o layout do gráfico
-    fig2.update_layout(
-        title="Histórico de Solicitações ao Longo do Tempo",
-        barmode='group',
-        xaxis_title='Data',
-        yaxis_title='Quantidade',
-        bargap=0.1,
-        xaxis=dict(
-            ticklabelmode="period",
-            dtick="M1",
-            tickformat="%b\n%Y"
-        )
-    )
-
-    # Mostrar o segundo gráfico no Streamlit
-    st.plotly_chart(fig2, use_container_width=True)
-
     # Adicionar uma tabela resumida
     st.subheader("Resumo das Solicitações por Setor e Status")
     summary_df = filtered_df.groupby(['Setor', 'Denominação Estado OS']).size().unstack(fill_value=0)
@@ -181,7 +104,83 @@ if start_date and end_date:
         mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
 
+# Função para mostrar análise do backlog
+def show_backlog_analysis():
+    # Carregar os dados principais para o Backlog Geral
+    df = pd.read_excel("TODAS_OS_20.xlsx")
 
+    # Ajustar o nome das colunas de datas de acordo com o seu arquivo Excel ('Data/Hora Edição')
+    df['Data/Hora Edição'] = pd.to_datetime(df['Data/Hora Edição'], errors='coerce')
+
+    # Drop linhas com datas inválidas (NaT)
+    df.dropna(subset=['Data/Hora Edição'], inplace=True)
+
+    # Filtrar as OS que não estão encerradas nem canceladas
+    df = df[~df['Denominação Estado OS'].isin(['ENCERRADA', 'CANCELADA'])]
+
+    # Calcular o valor total nominal do backlog com base em todos os dados
+    total_nominal = df.shape[0]  # Total de linhas na planilha
+
+    # Exibir o valor total nominal do backlog geral
+    st.write(f"Valor total do backlog: {total_nominal}")
+
+    # Filtrar por intervalo de datas para o Backlog Geral
+    start_date_backlog_geral = st.date_input("Data de início - Backlog Geral", pd.to_datetime("2024-01-01"), key="start_backlog_geral")
+    end_date_backlog_geral = st.date_input("Data de término - Backlog Geral", pd.to_datetime("2024-07-31"), key="end_backlog_geral")
+
+    # Converter para datetime64[ns]
+    start_date_backlog_geral = pd.to_datetime(start_date_backlog_geral)
+    end_date_backlog_geral = pd.to_datetime(end_date_backlog_geral)
+
+    # Filtrar os dados com base no intervalo de datas selecionado para o Backlog Geral
+    df_filtered_backlog_geral = df[(df['Data/Hora Edição'] >= start_date_backlog_geral) &
+                                   (df['Data/Hora Edição'] <= end_date_backlog_geral)]
+
+    # Criar um DataFrame para contar as quantidades de OS por mês para o Backlog Geral
+    months_backlog_geral = pd.date_range(start=start_date_backlog_geral, end=end_date_backlog_geral, freq='M').to_period('M')
+    backlog_geral = pd.DataFrame({'Mês': months_backlog_geral.to_timestamp()})
+
+    # Calcular o backlog acumulado
+    initial_backlog = df[(df['Data/Hora Edição'] < start_date_backlog_geral)].shape[0]
+    backlog_geral['Entradas'] = backlog_geral['Mês'].apply(lambda x: ((df_filtered_backlog_geral['Data/Hora Edição'] >= x) &
+                                                                     (df_filtered_backlog_geral['Data/Hora Edição'] < x + pd.DateOffset(months=1))).sum())
+    backlog_geral['Backlog Geral'] = backlog_geral['Entradas'].cumsum() + initial_backlog
+    backlog_geral['Mês'] = backlog_geral['Mês'].dt.strftime('%b %Y')
+
+    # Criar o gráfico de linhas para o Backlog Geral
+    fig_backlog_geral = px.line(backlog_geral, x="Mês", y="Backlog Geral", markers=True)
+    fig_backlog_geral.update_layout(
+        title="Evolução do Backlog Geral (2024)",
+        xaxis_title='Mês',
+        yaxis_title='Quantidade de OS no Backlog Geral'
+    )
+
+    # Exibir o gráfico do Backlog Geral
+    st.plotly_chart(fig_backlog_geral, use_container_width=True)
+
+    # Filtrar os dados com base no intervalo de datas selecionado para o Backlog por Setor
+    df_filtered_backlog_setor = df[(df['Data/Hora Edição'] >= start_date_backlog_geral) &
+                                   (df['Data/Hora Edição'] <= end_date_backlog_geral)]
+
+    # Criar um DataFrame para contar as quantidades de OS por mês e por setor para o Backlog por Setor
+    backlog_setor = df_filtered_backlog_setor.groupby(['Setor', pd.Grouper(key='Data/Hora Edição', freq='M')]).size().reset_index(name='Entradas')
+    backlog_setor['Backlog Setor'] = backlog_setor.groupby('Setor')['Entradas'].cumsum()
+    backlog_setor['Mês'] = backlog_setor['Data/Hora Edição'].dt.strftime('%b %Y')
+
+    # Criar o gráfico de linhas por setor para o Backlog por Setor
+    fig_backlog_setor = px.line(backlog_setor, x="Mês", y="Backlog Setor", color='Setor', markers=True)
+    fig_backlog_setor.update_layout(
+        title="Evolução do Backlog por Setor ao Longo do Tempo (2024)",
+        xaxis_title='Mês',
+        yaxis_title='Quantidade de OS no Backlog por Setor'
+    )
+
+    # Exibir o gráfico do Backlog por Setor
+    st.plotly_chart(fig_backlog_setor, use_container_width=True)
+
+
+# Chamar a função para exibir a análise de evolução do backlog
+show_backlog_analysis()
 
 # Código para filtrar e exibir tabela de outra planilha
 
@@ -199,7 +198,6 @@ if date_to_filter:
     # Filtrar o DataFrame pela data escolhida
     filtered_df_programacao_diaria = df_programacao_diaria[
         df_programacao_diaria['Data Prevista'].dt.date == date_to_filter]
-
 
     # Exibir o DataFrame filtrado
     st.write(f"Atividades para {date_to_filter}:")
