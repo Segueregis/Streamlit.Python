@@ -19,7 +19,7 @@ st.subheader('Gráfico Backlog')
 st.write('Obs: Este gráfico mostra os Setores.')
 
 # Carregar os dados principais
-df = pd.read_excel("UT-020-IMPRESAO.xlsm")
+df = pd.read_excel("UT-020-IMPRESAO.xlsx")
 
 # Contar as quantidades de OS por setor e status
 df_counts = df.groupby(['Setor', 'Status']).size().reset_index(name='Quantidade')
